@@ -1,0 +1,21 @@
+{
+  "name": "perpfactory",
+  "version": "1.0.0",
+  "description": "FTX on brink of collapse after liquidity crunch at crypto exchange",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "Perpetual",
+    "Futures",
+    "Contract",
+    "Solidity"
+  ],
+  "author": "James Bachini",
+  "license": "MIT",
+  "dependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^2.0.0",
+    "hardhat": "^2.12.2"
+  }
+}
