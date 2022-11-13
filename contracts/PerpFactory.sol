@@ -2,44 +2,50 @@
 pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "./Token.sol";
 import "./Perp.sol";
 
-contract Token is ERC20 {
-    address owner;
-    constructor(string memory _name, string memory _ticker) ERC20(_name, _ticker) {
-        owner = msg.sender;
-    }
-    function mint(address _to, uint _value) external {
-        _mint(_to, _value);
-    }
-    function burn(address _from, uint _value) external {
-        _burn(_from, _value);
-    }
-}
-
 contract PerpFactory {
-    address public pUSD;
+    address public perpUSD;
+    address public perpGov;
     uint ethPrice = 2000;
+    uint public perpCount;
+    address[] public perps;
+
+    event CreatePerp(address contractAddress, string ticker);
+    event Deposit(address user, uint amount);
+    event Withdraw(address user, uint amount);
+
     constructor() {
-        Token PerpUSD = new Token("PerpUSD", "PUSD");
-        pUSD = address(PerpUSD);
+        perpUSD = address(new Token("PerpUSD", "Token"));
+        perpGov = address(new Token("PerpGOV", "PGOV"));
+        Token(perpGov).mint(msg.sender, 1_000_000 ether);
     }
 
     function deposit() external payable {
         uint amount = msg.value * ethPrice;
-        Token(pUSD).mint(msg.sender, amount);
+        emit Deposit(msg.sender, amount);
+        Token(perpUSD).mint(msg.sender, amount);
     }
 
     function withdraw(uint _amount) external {
-        require(Token(pUSD).balanceOf(msg.sender) >= _amount, "Not enough funds to withdraw");
-        Token(pUSD).burn(msg.sender, _amount);
+        require(Token(perpUSD).balanceOf(msg.sender) >= _amount, "Not enough funds to withdraw");
+        Token(perpUSD).burn(msg.sender, _amount);
         uint ethReturned = _amount / ethPrice;
+        emit Withdraw(msg.sender, ethReturned);
         payable(msg.sender).transfer(ethReturned);
     }
 
-    function createPerp(string memory _asset) external returns (address) {
-        Perp newPerp = new Perp(_asset, pUSD);
-        return address(newPerp);
+    function createPerp(string memory _asset, uint _leverage) external returns (address) {
+        perpCount += 1;
+        address newPerp = address(new Perp(_asset, _leverage, perpUSD, msg.sender));
+        perps.push(newPerp);
+        emit CreatePerp(newPerp, _asset);
+        return newPerp;
+    }
+
+    /* Send users who get liquidated gov tokens :) */
+    function liquidated(address _trader, uint _feeAmount) external {
+        Token(perpGov).mint(_trader, _feeAmount);
     }
 }
