@@ -84,6 +84,15 @@ describe("Perp", () => {
       expect(bool2).to.equal(true);
     });
 
+    it("Oracle can adjust risk parameters", async () => {
+      await perp.riskUpdate(15000,1000);
+      const feeAdjustment = await perp.feeAdjustment();
+      const marginRequirement = await perp.marginRequirement();
+      expect(feeAdjustment).to.equal(15000);
+      expect(marginRequirement).to.equal(1000);
+      await perp.riskUpdate(10000,300);
+    });
+
     it("calculateFee should be zero initially", async () => {
       const pusdAmount = ethers.utils.parseEther('100');
       const fee = await perp.calculateFee(pusdAmount,true);

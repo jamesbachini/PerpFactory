@@ -1,30 +1,32 @@
-// We require the Hardhat Runtime Environment explicitly here. This is optional
-// but useful for running the script in a standalone fashion through `node <script>`.
-//
-// You can also run a script with `npx hardhat run <script>`. If you do that, Hardhat
-// will compile your contracts, add the Hardhat Runtime Environment's members to the
-// global scope, and execute the script.
 const hre = require("hardhat");
 
 async function main() {
-  const currentTimestampInSeconds = Math.round(Date.now() / 1000);
-  const ONE_YEAR_IN_SECS = 365 * 24 * 60 * 60;
-  const unlockTime = currentTimestampInSeconds + ONE_YEAR_IN_SECS;
-
-  const lockedAmount = hre.ethers.utils.parseEther("1");
-
-  const Lock = await hre.ethers.getContractFactory("Lock");
-  const lock = await Lock.deploy(unlockTime, { value: lockedAmount });
-
-  await lock.deployed();
-
-  console.log(
-    `Lock with 1 ETH and unlock timestamp ${unlockTime} deployed to ${lock.address}`
-  );
+  [owner, user1] = await ethers.getSigners();
+  const networkData = await ethers.provider.getNetwork();
+  if (networkData.chainId === 31337) { // Move some funds on local testnet
+    const sponsor = new ethers.Wallet('0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80', ethers.provider);
+    await sponsor.sendTransaction({ to: owner.address, value: ethers.utils.parseEther('2') });
+    console.log(`Sent ETH to ${owner.address}`);
+  }
+  const PerpFactory = await ethers.getContractFactory("PerpFactory");
+  perpFactory = await PerpFactory.deploy();
+  await perpFactory.deployed();
+  console.log(`PerpFactory deployed to ${perpFactory.address}`);
+  const tx = await perpFactory.createPerp('BTC10X',10);
+  const res = await tx.wait();
+  const perpAddress = res.events[0].args.contractAddress;
+  const Perp = await ethers.getContractFactory("Perp");
+  perp = await Perp.attach(perpAddress);
+  console.log(`Perp BTC10X deployed to ${perp.address}`);
+  const pUSDAddress = await perpFactory.perpUSD();
+  const Token = await ethers.getContractFactory("Token");
+  pUSD = await Token.attach(pUSDAddress);
+  console.log(`pUSD deployed to ${pUSD.address}`);
+  const pGovAddress = await perpFactory.perpGov();
+  pGov = await Token.attach(pGovAddress);
+  console.log(`pGov deployed to ${pGov.address}`);
 }
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
 main().catch((error) => {
   console.error(error);
   process.exitCode = 1;

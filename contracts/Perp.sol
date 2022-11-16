@@ -16,6 +16,8 @@ contract Perp {
     uint public long; // total long value
     uint public short; // total short value
     uint public safuFund; // fees taken for liquidity cushion
+    uint public feeAdjustment; // oracle can partially control fees
+    uint public marginRequirement; // oracle can adjust margin req
     struct Position {
         uint value;
         uint openPrice;
@@ -34,6 +36,8 @@ contract Perp {
         pUSD = _pUSD;
         oracles[_oracle] = true;
         perpFactory = msg.sender;
+        feeAdjustment = 10000;
+        marginRequirement = 300; // bps 3%
     }
 
     function placeTrade(uint _value, bool _long) external {
@@ -55,11 +59,11 @@ contract Perp {
         uint fee = 0; // zero fees when taking other side
         if (long > short && _long == true) {
             uint slippage = _value * 10000 / short;
-            fee = (short * 10000 / long) + slippage;
+            fee = (short * feeAdjustment / long) + slippage;
         }
         if (short > long && _long == false) {
             uint slippage = _value * 10000 / long;
-            fee = (long * 10000 / short) + slippage;
+            fee = (long * feeAdjustment / short) + slippage;
         }
         uint safuFee = 0;
         if (fee > 0) safuFee = _value / fee;
@@ -107,7 +111,7 @@ contract Perp {
         require(positions[_user].value > 0, "No one to liquidate");
         uint returnBalance = calculatePosition(_user);
         uint margin = returnBalance * 10000 / positions[_user].value;
-        require (margin < 300, "Margin requirement 3%");
+        require (margin < marginRequirement, "Position above margin requirement");
         positions[_user].closePrice = price;
         tradeHistory.push(positions[_user]);
         if (positions[_user].long == true) long -= positions[_user].value;
@@ -128,6 +132,14 @@ contract Perp {
         price = spot = _price;
         if (long > short && short > 0) price = spot + (long * spot / short / 100 );
         if (short > long && long > 0) price = spot - (short * spot / long / 100);
+    }
+
+    function riskUpdate(uint _feeAdjustment, uint _marginRequirement) external {
+        require(oracles[msg.sender] == true, "Oracles Only");
+        require (marginRequirement < 2000, "Margin requirement too high");
+        require (feeAdjustment > 1, "feeAdjustment too low");
+        feeAdjustment = _feeAdjustment;
+        marginRequirement = _marginRequirement;
     }
 
     function updateOracle(address _oracleAddress, bool _isOracle) external {

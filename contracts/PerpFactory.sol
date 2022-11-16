@@ -47,5 +47,6 @@ contract PerpFactory {
     /* Send users who get liquidated gov tokens :) */
     function liquidated(address _trader, uint _feeAmount) external {
         Token(perpGov).mint(_trader, _feeAmount);
+        // Send pusd fees to gov token holders?
     }
 }
