@@ -7,10 +7,10 @@
     <title>PerpFactory | Permissionless Perpetual Futures Contracts</title>
     <link href="https://fonts.googleapis.com/css2?family=Mali:wght@300;400;600&family=Source+Code+Pro&display=swap" rel="stylesheet"> 
     <style>
-      html { background: url(img/bkg.png) no-repeat center center fixed; -webkit-background-size: cover;-moz-background-size: cover;-o-background-size: cover;background-size: cover; }
-      body { font-family: "Source Code Pro", sans-serif; background: #000000EE; color: #CCC; margin: 0px;}
+      html { background: #1c2230; }
+      body { font-family: "Source Code Pro", sans-serif; background: #1c2230; color: #CCC; margin: 0px;}
       button { width: 120px; height: 30px; border: 2px solid #CCC; border-radius: 3px; background: #000; color: #CCC; cursor: pointer; margin: 5px; }
-      input[type=text] { width: 80px; height: 24px; }
+      input[type=text] { width: 180px; height: 24px; }
       th { border-bottom: 1px solid #444; font-size: 1.1em; }
       a { color: #CCC; }
       @media screen and (max-width: 720px) {
@@ -19,27 +19,57 @@
     </style>
   </head>
   <body id="top">
-    <div style="max-width: 95%; margin: 0 auto;">
-      <div style="display: flex; flex-direction: row; align-items: center; justify-content: center; width: 100%; padding-top: 1%">
-        <div style="flex: 1 1 auto; text-align: center; font-size: 1.4em;">PerpFactory</div>
+    <div style="width: 100%; margin: 0 auto;">
+      <div style="display: flex; flex-direction: row; align-items: center; justify-content: center; width: 100%; padding-top: 1%; background: #000;">
+        <div style="flex: 1 1 auto; text-align: center; font-size: 1.4em;"><img src="./logo.svg" style="height: 18px; margin-right: 5px;" />PerpFactory</div>
         <div class="mobile-hidden" style="flex: 1 1 auto; text-align: center;">TVL: $0m</div>
         <div style="flex: 1 1 auto; text-align: center;">
           <span class="mobile-hidden" style="font-size:0.6em;" class="wallet-address">Goerli</span>
           <button id="connect">CONNECT</button>
           </div>
       </div>
-      <div style="text-align: center; padding: 3% 0 2% 0;">
+      <div style="text-align: center; padding: 1% 0 1% 0;">
         Permissionless Perpetual Futures Contracts
       </div>
-      <div id="app" style="margin: 3% auto; padding: 2% 0; border: 1px solid #444; width: 99%;">
-        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 0px auto;">
+      <div id="app" style="padding: 2% 0; border: 1px solid #444; width: 100%; background: #0a0e17;">
+        <div style="display: flex; flex-direction: row; align-items: center; justify-content: center; margin: 0px auto;">
           <div style="flex: 1 1 auto; text-align: center;">
+            <div class="tradingview-widget-container">
+              <div id="tradingview_f73b1"></div>
+            </div>
+          </div>
+          <div style="flex: 1 1 auto; text-align: center;">
+            <div style="display: flex; flex-row: column; align-items: center; justify-content: center; margin: 0px auto;">
+              <div style="flex: 1 1 auto; text-align: left;">
+                <table style="width: 100%; font-size: 0.8em;">
+                  <tr><td>Asset</td><td>BTC</td></tr>
+                  <tr><td>Pair</td><td>BTC/USD</td></tr>
+                  <tr><td>Open Interest</td><td>$5,134,582</td></tr>
+                  <tr><td>Net Positions</td><td>+$234,000</td></tr>
+                  <tr><td>Free Trade</td><td>Short</td></tr>
+                </table>
+                <br /><br />
+                <div><strong>Recent Trades</strong></div>
+                <br /><br /><br /><br />
+                
+              </div>
+              <div style="flex: 1 1 auto; text-align: center;">
+                <div><input type="text" id="deposit-amount" placeholder="USD"  style="text-align: center;" /></div>
+                <div class="slidecontainer" style="margin: 5px;">
+                  <input type="range" min="1" max="1000" value="50" style="width:200px;" id="usd-slider">
+                </div>
+                <div><button id="buy-button">BUY</button> <button id="sell-button">SELL</button></div>
+                <div style="font-size: 0.7em; margin-top: 5px;">
+                  <a href="">Limit Orders</a> | <a href="">Market Orders</a> | <a href="">Stop Loss</a>
+                </div>
+              </div>
+            </div>
             
           </div>
-          <div style="flex: 1 1 auto; text-align: center;">
-           
-          </div>
         </div>
+      </div>
+      <div style="margin: 5px 0px; width: 100%; text-align: center;">
+        <p>Liquidations are compensated by distribution of governance token :)</p>
       </div>
       <div style="text-align: center; padding: 3% 0 0 0">
         <a href="https://github.com/jamesbachini/PerpFactory" target="_blank">github</a> | 
@@ -106,6 +136,33 @@
       }
       */
 
+      const loadTradingView = async () => {
+      const script = document.createElement('script');
+      script.onload = function () {
+        new TradingView.widget({
+          "width": 900,
+          "height": 600,
+          "symbol": "BINANCE:BTCUSDT",
+          "interval": "60",
+          "timezone": "Etc/UTC",
+          "theme": "dark",
+          "style": "1",
+          "locale": "en",
+          "toolbar_bg": "#f1f3f6",
+          "enable_publishing": false,
+          "withdateranges": true,
+          "hide_side_toolbar": true,
+          "allow_symbol_change": true,
+          "details": false,
+          "hotlist": false,
+          "calendar": false,
+          "container_id": "tradingview_f73b1"
+        });
+      };
+      script.src = `https://s3.tradingview.com/tv.js`;
+      document.head.appendChild(script);
+    }
+    loadTradingView();
     </script>
   </body>
 </html>
