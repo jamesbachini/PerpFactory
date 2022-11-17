@@ -1,7 +1,7 @@
 # PerpFactory
 ## Permissionless Perpetual Futures Contracts
 
-![screenshot](https://github.com/jamesbachini/PerpFactory/blob/master/docs/screenshot.jpg?raw=true)
+![screenshot](https://github.com/jamesbachini/PerpFactory/blob/master/docs/screenshot.png?raw=true)
 
 Following the collapse of FTX it would be nice to demonstrate a perpetual swap contract written in Solidity for Ethereum.
 
